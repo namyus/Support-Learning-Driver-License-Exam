@@ -34,6 +34,10 @@ function CourseTable() {
     const [specificCourse, setSpecificCourse] = useState(null);
     const [memberList, setMemberList] = useState([]);
 
+    const sortedRecords = [...records].sort((a, b) => {
+        return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+    });
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -182,15 +186,25 @@ function CourseTable() {
                             </tr>
                         </thead>
                         <tbody className='table-group-divider align-middle'>
-                            {records.length > 0 ? (
-                                records.map((course, i) => {
+                            {sortedRecords.length > 0 ? (
+                                sortedRecords.map((course, i) => {
                                     const mapKey = mapRecord.get(course.courseId);
                                     const mapValue = mapKey ? mapKey.length : 0;
+
                                     return (
-                                        <tr key={i}>
+                                        <tr key={course.courseId}>
                                             <td>{overallIndex + i + 1}</td>
                                             <td>
-                                                <a href='/' onClick={(e) => (handleShow(), showInfo(course.courseId), e.preventDefault())}>{course.courseId}</a>
+                                                <a
+                                                    href='/'
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        handleShow();
+                                                        showInfo(course.courseId);
+                                                    }}
+                                                >
+                                                    {course.courseId}
+                                                </a>
                                             </td>
                                             <td>{course.name}</td>
                                             <td>{formatDate(course.startDate)}</td>
@@ -199,10 +213,24 @@ function CourseTable() {
                                             <td className='text-center'>{course.limitStudent}</td>
                                             <td className='text-center'>{course.courseMonth}</td>
                                             <td className='text-center'>{course.courseYear}</td>
-                                            <td className='text-center'>{course.status ? "Đã kích hoạt" : "Chưa kích hoạt"}</td>
+                                            <td className='text-center'>
+                                                {course.status ? "Đã kích hoạt" : "Chưa kích hoạt"}
+                                            </td>
                                             <td className='button text-center'>
-                                                <button className="btn btn-primary" type="button" onClick={() => updateBtn(course.courseId)}>Cập nhật</button>
-                                                <button className="btn btn-danger" type="button" onClick={() => handleDelete(course.courseId)}>Xoá</button>
+                                                <button
+                                                    className="btn btn-primary"
+                                                    type="button"
+                                                    onClick={() => updateBtn(course.courseId)}
+                                                >
+                                                    Cập nhật
+                                                </button>
+                                                <button
+                                                    className="btn btn-danger"
+                                                    type="button"
+                                                    onClick={() => handleDelete(course.courseId)}
+                                                >
+                                                    Xoá
+                                                </button>
                                             </td>
                                         </tr>
                                     )
