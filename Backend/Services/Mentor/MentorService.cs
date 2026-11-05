@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Backend.DTO.Mentor;
 using Backend.DTO.Staff;
+using Backend.Repository.ClassRepository;
 using Backend.Repository.MentorRepository;
 using Backend.Repository.UserRepository;
 using Microsoft.EntityFrameworkCore;
@@ -11,12 +12,17 @@ namespace Backend.Services.Mentor
     {
         private readonly IMentorRepository _mentorRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IClassRepository _classRepository;
         private readonly IMapper _mapper;
 
-        public MentorService(IMentorRepository mentorRepository, IUserRepository userRepository, IMapper mapper)
+        public MentorService(IMentorRepository mentorRepository
+            , IUserRepository userRepository
+            , IClassRepository classRepository
+            ,IMapper mapper)
         {
             _mentorRepository = mentorRepository;
             _userRepository = userRepository;
+            _classRepository = classRepository;
             _mapper = mapper;
         }
 
@@ -27,6 +33,7 @@ namespace Backend.Services.Mentor
             {
                 var mentors = _mentorRepository.GetAll()
                     .Include(m => m.User)
+                    .Where(m => m.User.Status == true)
                     .ToList();
 
                 if (!mentors.Any())
@@ -53,7 +60,7 @@ namespace Backend.Services.Mentor
             {
                 var mentor = await _mentorRepository.GetAll()
                     .Include(m => m.User)
-                    .FirstOrDefaultAsync(m => m.MentorId == id && m.UserId == m.User.UserId);
+                    .FirstOrDefaultAsync(m => m.MentorId == id);
 
                 if (mentor == null)
                 {
@@ -169,5 +176,143 @@ namespace Backend.Services.Mentor
             }
             return result;
         }
+
+        public async Task<ServiceResult<int>> UpdateMentor(MentorUpdateDTO mentorUpdateDto)
+        {
+            var result = new ServiceResult<int>();
+            try
+            {
+                var mentor = await _mentorRepository.GetAll()
+                    .Include(m => m.User)
+                    .FirstOrDefaultAsync(m => m.MentorId == mentorUpdateDto.MentorId);
+
+                if (mentor == null)
+                {
+                    result.IsError = true;
+                    result.ErrorMessage = "Không tìm thấy giảng viên!";
+                    result.Payload = -1;
+                    return result;
+                }
+
+                var updateMentor = _mapper.Map(mentorUpdateDto, mentor);
+                await _mentorRepository.UpdateAsync(updateMentor);
+
+                var mentorUser = _mapper.Map(mentorUpdateDto, mentor.User);
+                await _userRepository.UpdateAsync(mentorUser);
+
+            }
+            catch (Exception e)
+            {
+                result.IsError = true;
+                result.ErrorMessage = e.Message;
+                result.Payload = 0;
+            }
+            
+            return result;
+        }
+
+        public async Task<ServiceResult<int>> DeleteMentor(int id)
+        {
+            var result = new ServiceResult<int>();
+            try
+            {
+                var mentor = await _mentorRepository.GetAll()
+                    .Include(m => m.User)
+                    .FirstOrDefaultAsync(m => m.MentorId == id);
+                if (mentor == null)
+                {
+                    result.IsError = true;
+                    result.ErrorMessage = "Không tìm thấy giảng viên!";
+                    result.Payload = -1;
+                    return result;
+                }
+
+                mentor.User.Status = false;
+                await _userRepository.UpdateAsync(mentor.User);
+            }
+            catch (Exception e)
+            {
+                result.IsError = true;
+                result.ErrorMessage = e.Message;
+                result.Payload = 0;
+            }
+            
+            return result;
+        }
+
+        // get mentor who teach theory
+        public async Task<ServiceResult<ICollection<MentorDTO>>> GetMentorTheory()
+        {
+            var result = new ServiceResult<ICollection<MentorDTO>>();
+            try
+            {
+                var mentors = await _mentorRepository.GetAll()
+                    .Include(m => m.User)
+                    .Where(m => m.User.Status == true && m.IsTeachingTheory == true)
+                    .ToListAsync();
+
+                if (!mentors.Any())
+                {
+                    result.IsError = true;
+                    result.ErrorMessage = "Không tìm thấy giảng viên!";
+                    return result;
+                }
+
+                result.Payload = _mapper.Map<ICollection<MentorDTO>>(mentors);
+            }
+            catch (Exception e)
+            {
+                result.IsError = true;
+                result.ErrorMessage = e.Message;
+            }
+            return result;
+        }
+
+        // get mentor by course id
+        public async Task<ServiceResult<ICollection<MentorDTO>>> GetMentorByCourseId(string courseId)
+        {
+            var result = new ServiceResult<ICollection<MentorDTO>>();
+            try
+            {
+                var classes = await _classRepository.GetAll()
+                    .Where(c => c.CourseId == courseId)
+                    .GroupBy(c => c.MentorId)
+                    .ToListAsync();
+                if (!classes.Any())
+                {
+                    result.IsError = true;
+                    result.ErrorMessage = "Chưa có giảng viên trong khóa!";
+                    return result;
+                }
+
+                var mentors = new List<DB.Models.Mentor>();
+                foreach (var c in classes)
+                {
+                    var mentor = await _mentorRepository.GetAll()
+                        .Include(m => m.User)
+                        .FirstOrDefaultAsync(m => m.MentorId == c.Key);
+                    if (mentor != null)
+                    {
+                        mentors.Add(mentor);
+                    }
+                }
+
+                if (!mentors.Any())
+                {
+                    result.IsError = true;
+                    result.ErrorMessage = "Không tìm thấy giảng viên!";
+                    return result;
+                }
+
+                result.Payload = _mapper.Map<ICollection<MentorDTO>>(mentors);
+            }
+            catch (Exception e)
+            {
+                result.IsError = true;
+                result.ErrorMessage = e.Message;
+            }
+            return result;
+        }
+        
     }
 }

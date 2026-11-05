@@ -1,6 +1,4 @@
 ﻿using AutoMapper;
-using Backend.DTO.Members;
-using Backend.DTO.News;
 using Backend.DTO.Users;
 using Backend.Repository.UserRepository;
 using Backend.Services;
@@ -23,7 +21,7 @@ namespace Backend.Services.User
         {
             try
             {
-                var users = _userRepository.GetAll();
+                var users = _userRepository.GetAll().Where(u => u.Status == true);
                 return users is null ? null : _mapper.Map<ICollection<UserDTO>>(users);
             }
             catch (Exception e)
@@ -38,9 +36,8 @@ namespace Backend.Services.User
             var result = new ServiceResult<UserDTO>();
             try
             {
-                var user = _userRepository.GetAll()
-                    .Where(p => p.Username == username)
-                    .FirstOrDefault();
+                var user =  _userRepository.GetAll()
+                    .Where(p => p.Username.Equals(username)).FirstOrDefault();
 
                 if (user is null)
                 {

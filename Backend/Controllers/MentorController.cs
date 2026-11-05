@@ -48,11 +48,11 @@ namespace Backend.Controllers
             return Ok(result.Payload);
         }
 
-        /*[HttpGet]
-        [Route("course/{courseId}")]
-        public Task<IActionResult> GetMentorByCourseId(string courseId)
+        [HttpGet]
+        [Route("user/{userId}")]
+        public async Task<IActionResult> GetMentorByUserId(int userId)
         {
-            var result = _mentorService.GetAllMentorsByCourseId(courseId);
+            var result = await _mentorService.GetMentorByUserId(userId);
             if (result.IsError)
             {
                 return NotFound(new
@@ -62,13 +62,38 @@ namespace Backend.Controllers
             }
 
             return Ok(result.Payload);
-        }*/
+        }
 
+        /// <summary>
+        /// Return all mentors who teach theory
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
-        [Route("user/{userId}")]
-        public async Task<IActionResult> GetMentorByUserId(int userId)
+        [Route("theory")]
+        public async Task<IActionResult> GetMentorTheory()
         {
-            var result = await _mentorService.GetMentorByUserId(userId);
+            var result = await _mentorService.GetMentorTheory();
+            if (result.IsError)
+            {
+                return NotFound(new
+                {
+                    error = result.ErrorMessage
+                });
+            }
+
+            return Ok(result.Payload);
+        }
+
+        /// <summary>
+        /// Return all mentors who registered to teach a course
+        /// </summary>
+        /// <param name="courseId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("course/{courseId}")]
+        public async Task<IActionResult> GetMentorByCourseId(string courseId)
+        {
+            var result = await _mentorService.GetMentorByCourseId(courseId);
             if (result.IsError)
             {
                 return NotFound(new
@@ -102,6 +127,54 @@ namespace Backend.Controllers
             }
 
             return Ok("Thêm Mentor thành công!");
+        }
+
+        [HttpPut]
+        [Route("update")]
+        public async Task<IActionResult> UpdateMentor(MentorUpdateDTO mentorUpdateDto)
+        {
+            var result = await _mentorService.UpdateMentor(mentorUpdateDto);
+            if (result.IsError)
+            {
+                if (result.Payload == -1)
+                {
+                    return NotFound(new
+                    {
+                        error = result.ErrorMessage
+                    });
+                }
+
+                return BadRequest(new
+                {
+                    error = result.ErrorMessage
+                });
+            }
+
+            return Ok("Cập nhật Mentor thành công!");
+        }
+
+        [HttpDelete]
+        [Route("delete/{mentorId}")]
+        public async Task<IActionResult> DeleteMentor(int mentorId)
+        {
+            var result = await _mentorService.DeleteMentor(mentorId);
+            if (result.IsError)
+            {
+                if (result.Payload == -1)
+                {
+                    return NotFound(new
+                    {
+                        error = result.ErrorMessage
+                    });
+                }
+
+                return BadRequest(new
+                {
+                    error = result.ErrorMessage
+                });
+            }
+
+            return Ok("Xóa Mentor thành công!");
         }
     }
 }

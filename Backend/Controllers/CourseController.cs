@@ -76,6 +76,22 @@ namespace Backend.Controllers
 
         }
 
+        [HttpGet("check-valid")]
+        public async Task<IActionResult> CheckValidCourse(CourseCreateDTO courseCreateDto)
+        {
+            var result = await _courseService.CheckValidCourse(courseCreateDto);
+
+            if (result.IsError)
+            {
+                return BadRequest(new
+                {
+                    error = result.ErrorMessage
+                });
+            }
+
+            return Ok(result.Payload);
+        }
+
         [HttpPost("add")]
         public async Task<IActionResult> AddCourse(CourseCreateDTO courseCreateDto)
         {
@@ -123,6 +139,20 @@ namespace Backend.Controllers
 
 
             return Ok("Cập nhật khóa học thành công!");
+        }
+
+        [HttpPatch("activate/{id}")]
+        public async Task<IActionResult> ActivateCourse(string id)
+        {
+            var result = await _courseService.ActivateCourse(id);
+
+            if (result.IsError)
+                return BadRequest(new
+                {
+                    error = result.ErrorMessage
+                });
+
+            return Ok("Đã kích hoạt khóa học!");
         }
 
         [HttpDelete("deactivate/{id}")]

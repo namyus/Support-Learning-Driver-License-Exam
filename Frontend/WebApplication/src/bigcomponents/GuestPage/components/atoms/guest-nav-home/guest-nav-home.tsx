@@ -15,33 +15,33 @@ function GuestNavHome() {
                             </Link>
                         </div>
                         <div className='nav-home-items'>
-                            <Link to="center-introduction" spy={true} smooth={true} offset={-100} duration={500}>
+                            <Link to="center-introduction" spy={true} offset={-100} duration={500}>
                                 <li className='inline-block'>
                                     <a href="">Trang chủ</a>
                                 </li></Link>
                         </div>
                         <div className='nav-home-items'>
-                            <Link to="course-section" spy={true} smooth={true} offset={-120} duration={500}>
+                            <Link to="course-section" spy={true} offset={-120} duration={500}>
                                 <li className='inline-block'>
                                     <a href="">Khóa học</a>
                                 </li></Link>
                         </div>
                         <div className='nav-home-items'>
-                            <Link to="center-consultation" spy={true} smooth={true} offset={-120} duration={500}>
+                            <Link to="center-consultation" spy={true} offset={-120} duration={500}>
                                 <li className='inline-block'>
                                     <a href="">Tư vấn</a>
                                 </li>
                             </Link>
                         </div>
                         <div className='nav-home-items'>
-                            <Forward to='/dang-nhap' >
+                            <Forward to='dang-nhap' >
                                 <li className='inline-block'>
                                     <a href="">Đăng nhập</a>
                                 </li>
                             </Forward>
                         </div>
                         <div className='nav-home-items'>
-                            <Forward to='/dang-ky' >
+                            <Forward to='dang-ky' >
                                 <li className='inline-block'>
                                     <a href="">Đăng ký</a>
                                 </li>

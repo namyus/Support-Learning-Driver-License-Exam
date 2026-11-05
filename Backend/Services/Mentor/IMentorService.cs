@@ -15,5 +15,13 @@ namespace Backend.Services.Mentor
         Task<ServiceResult<MentorDTO>> GetMentorByUserId(int userId);
 
         Task<ServiceResult<int>> CreateMentor(MentorCreateDTO mentorCreateDto);
+
+        Task<ServiceResult<int>> UpdateMentor(MentorUpdateDTO mentorUpdateDto);
+
+        Task<ServiceResult<int>> DeleteMentor(int id);
+
+        Task<ServiceResult<ICollection<MentorDTO>>> GetMentorTheory();
+
+        Task<ServiceResult<ICollection<MentorDTO>>> GetMentorByCourseId(string courseId);
     }
 }

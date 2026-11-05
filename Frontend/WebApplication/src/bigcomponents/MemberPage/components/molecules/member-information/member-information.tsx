@@ -8,29 +8,47 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 function MemberInformationForm() {
     const user = sessionStorage.getItem('loginedUser') ? JSON.parse(sessionStorage.getItem('loginedUser')) : null;
-    const userId = user.userID;
 
     const [member, setMember] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [course, setCourse] = useState(null);
+    const [student, setStudent] = useState(null);
 
     const handleScroll = () => {
-        window.scrollTo(0, 0);
+        window.scroll({
+            top: 0,
+            behavior: 'instant'
+        });
     }
 
     const navigate = useNavigate();
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        window.scrollTo(0, 0);
+        window.scroll({
+            top: 0,
+            behavior: 'instant'
+        });
         navigate('/thong-tin-ca-nhan/cap-nhat')
     }
 
-    const getMemberById = async () => {
+    const getMemberByUID = async () => {
         try {
-            const response = await api.post('Member?userID=' + userId);
+            const response = await api.get('Member/' + user.userID);
             const res = response.data;
             setMember(res);
+            setIsLoading(false);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    const getStudentById = async () => {
+        try {
+            const response = await api.get('Student/' + member.memberID);
+            const res = response.data;
+            console.log(res);
+            setStudent(res);
         } catch (err) {
             console.log(err);
         }
@@ -42,19 +60,22 @@ function MemberInformationForm() {
             const res = response.data;
             console.log(res);
             setCourse(res);
-            setIsLoading(false);
         } catch (err) {
             console.log(err);
         }
     }
 
     useEffect(() => {
-        getMemberById();
+        getMemberByUID();
     }, [])
 
     useEffect(() => {
         getCourseById();
     }, [member])
+
+    useEffect(() => {
+        getStudentById();
+    }, [course])
 
     const formatDate = (dbDate) => {
         const date = new Date(dbDate);
@@ -70,11 +91,11 @@ function MemberInformationForm() {
                 <h1 className='member-information-title'>Thông tin thành viên</h1>
                 <div className='member-information-content'>
                     {
-                        member != null ? (
+                        member !== null && course !== null ? (
                             isLoading == false ? (
                                 <>
                                     <div className='member-avatar'>
-                                        <img src={MemberImg} alt="hinh-anh-giang-vien" />
+                                        <img src={MemberImg} alt="hinh-anh-thanh-vien" />
                                     </div>
                                     <form onSubmit={handleSubmit}>
                                         <li>
@@ -117,15 +138,30 @@ function MemberInformationForm() {
                                             <label htmlFor="cccdNo"><strong><i>Số CCCD/CMND: </i></strong></label>
                                             <span>{member.identityCardNumber}</span>
                                         </li>
-                                        <li>
-                                            <label htmlFor="studentID"><strong><i>Mã số học viên: </i></strong></label>
-                                            <span>{`${member.courseId}.${member.memberID}`}</span>
-                                        </li>
-                                        <li>
-                                            <label htmlFor="courseID"><strong><i>Khoá học: </i></strong></label>
-                                            <span>{course.name}</span>
-                                        </li>
-                                        <button className='update-btn' type='submit' onClick={handleScroll}>Cập nhật</button>
+                                        {
+                                            student !== null ? (
+                                                <>
+                                                    <li>
+                                                        <label htmlFor="studentID"><strong><i>Mã số học viên: </i></strong></label>
+                                                        <span>{`${student.studentId}`}</span>
+                                                    </li>
+                                                    <li>
+                                                        <label htmlFor="courseID"><strong><i>Khoá học: </i></strong></label>
+                                                        <span>{course.name}</span>
+                                                    </li>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <li>
+                                                        <label htmlFor="studentID"><strong><i>Mã số học viên: </i></strong></label>
+                                                    </li>
+                                                    <li>
+                                                        <label htmlFor="courseID"><strong><i>Khoá học: </i></strong></label>
+                                                    </li>
+                                                </>
+                                            )
+                                        }
+                                        {/* <button className='update-btn' type='submit' onClick={handleScroll}>Cập nhật</button> */}
                                     </form>
                                 </>
                             ) : (

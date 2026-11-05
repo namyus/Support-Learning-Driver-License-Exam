@@ -1,7 +1,8 @@
 import axios, { AxiosRequestConfig } from "axios";
 
 const config: AxiosRequestConfig = {
-    baseURL: "https://localhost:7066/api/",
+    // baseURL: "https://fdriving.azurewebsites.net/api/",
+    baseURL: "http://localhost:8080/api/",
 }
 
 const api = axios.create(config);

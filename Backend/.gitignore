@@ -475,3 +475,28 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# ASP.NET Core local settings
+appsettings.Local.json
+appsettings.Development.json
+
+# User secrets / local certificates
+secrets.json
+*.pfx
+*.publishsettings
+
+# Docker local overrides
+docker-compose.override.yml
+
+# Local database backups
+*.bak
+*.bacpac
+
+# Test coverage
+coverage/

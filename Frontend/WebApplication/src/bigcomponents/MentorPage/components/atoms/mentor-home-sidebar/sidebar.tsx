@@ -21,6 +21,7 @@ function MentorSidebar() {
     try {
       const response = await api.get('Mentor/user/' + user.userID);
       setMentor(response.data);
+      sessionStorage.setItem('loginedMentor', JSON.stringify(response.data));
     } catch (error) {
       console.log(error);
     }
@@ -32,7 +33,10 @@ function MentorSidebar() {
 
   const handleScroll = () => {
     {
-      window.scrollTo(0, 0);
+      window.scroll({
+        top: 0,
+        behavior: 'instant'
+      });
     }
   }
 
@@ -70,21 +74,12 @@ function MentorSidebar() {
             </li>
             <li className='sidebar-component'>
               <div className="mentor-list">
-                <NavLink style={styleSidebarCom} to='/dang-ki-lich-day'>
+                <NavLink style={styleSidebarCom} to='/danh-sach-khoa-hoc-giao-vien'>
                   Đăng kí lịch dạy
                 </NavLink>
               </div>
             </li>
-            <li className='sidebar-component'>
-              <div className="mentor-list">
-                <NavLink style={styleSidebarCom} to='/tai-lieu-day-hoc'>
-                  Tài liệu dạy học
-                </NavLink>
-              </div>
-            </li>
-            <NavLink style={styleSidebarCom} to='/thong-tin-ca-nhan-giao-vien'>
-              <h3 className='mini-title'>Tài khoản: <a href="">{mentor.fullName}</a></h3>
-            </NavLink>
+            <h3 className='mini-title'>Tài khoản: {mentor.fullName}</h3>
             <li className='sidebar-component'>
               <div className="mentor-list">
                 <NavLink className='logout-btn' to='/' onClick={handleLogout}>

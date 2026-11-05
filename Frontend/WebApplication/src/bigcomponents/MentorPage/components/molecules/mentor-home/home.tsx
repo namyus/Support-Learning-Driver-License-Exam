@@ -13,13 +13,6 @@ function HomePage() {
         <div className='mentor-home-page'>
           <li className='home-component'>
             <div className="mentor-list">
-              <NavLink to='/danh-sach-lop-hoc'>
-                Danh sách lớp học
-              </NavLink>
-            </div>
-          </li>
-          <li className='home-component'>
-            <div className="mentor-list">
               <NavLink to='/lich-day'>
                 Lịch dạy
               </NavLink>
@@ -27,22 +20,8 @@ function HomePage() {
           </li>
           <li className='home-component'>
             <div className="mentor-list">
-              <NavLink to='/chi-tiet-lich-day'>
-                Chi tiết lịch dạy
-              </NavLink>
-            </div>
-          </li>
-          <li className='home-component'>
-            <div className="mentor-list">
-              <NavLink to='/dang-ki-lich-day'>
+              <NavLink to='/danh-sach-khoa-hoc-giao-vien'>
                 Đăng kí lịch dạy
-              </NavLink>
-            </div>
-          </li>
-          <li className='home-component'>
-            <div className="mentor-list">
-              <NavLink to='/tai-lieu-day-hoc'>
-                Tài liệu dạy học
               </NavLink>
             </div>
           </li>

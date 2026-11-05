@@ -7,7 +7,6 @@ import { toast } from 'react-toastify';
 function UpdateCourseForm() {
     const { courseId } = useParams();
     const [error, setError] = useState(null);
-    const [course, setCourse] = useState(null);
     const [inputData, setInputData] = useState({
         courseId: '',
         name: '',
@@ -53,7 +52,10 @@ function UpdateCourseForm() {
                 return;
             }
         }
-        window.scrollTo(0, 0);
+        window.scroll( {
+            top: 0,
+            behavior: 'instant'
+        });
     }
 
     const formatDateToInputValue = (dateString) => {

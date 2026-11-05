@@ -14,10 +14,52 @@
         align-self: flex-start;
         padding: 10px 50px;
 
-        li {
-            list-style: none;
-            line-height: 250%;
-            font-size: 24px;
+        ul {
+            gap: 30px;
+            flex-direction: column;
+            display: flex;
+
+            li {
+                list-style: none;
+                font-size: 24px;
+            }
         }
+
+        .disabled-link {
+            color: gray;
+            /* Change the text color to gray */
+            pointer-events: none;
+            /* Prevent the link from being clickable */
+            text-decoration: none;
+            /* Remove underline, if any */
+            cursor: not-allowed;
+        }
+    }
+
+    /* Define your CSS classes for styling the text */
+    .theory-status-incomplete {
+        color: red;
+        /* Color for "Chưa hoàn thành" */
+    }
+
+    .theory-status-complete {
+        color: green;
+        /* Color for "Hoàn thành" */
+    }
+
+    .theory-exam-fail {
+        color: red;
+    }
+
+    .theory-exam-pass {
+        color: green;
+    }
+
+    .payment-finish {
+        color: green;
+    }
+
+    .payment-notyet {
+        color: red;
     }
 }

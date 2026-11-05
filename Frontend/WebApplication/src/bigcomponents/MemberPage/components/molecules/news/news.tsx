@@ -2,18 +2,18 @@ import './news.scss'
 import NewsImg from '../../../../../../assets/imgs/news/news-img.jpeg'
 import { useEffect, useState } from 'react';
 import api from '../../../../../config/axios';
-import { Backdrop, CircularProgress } from '@mui/material';
 
 function News() {
 
     const [data, setData] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
 
     const getAllNews = async () => {
-        const response = await api.get('News/list');
-        console.log(response);
-        setData(response.data);
-        setIsLoading(false);
+        try {
+            const response = await api.get('News/list');
+            setData(response.data);
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     useEffect(() => {
@@ -51,7 +51,7 @@ function News() {
                                     <img src={NewsImg} alt="news-img" />
                                     {newsItem ? (
                                         <>
-                                            <h2 className={`news-${i + 1}-title`}>{newsItem.title}</h2>
+                                            <a href='' className={`news-${i + 1}-title`}>{newsItem.title}</a>
                                             <h3 className={`news-${i + 1}-description`}>{newsItem.description}</h3>
                                             <p className={`news-${i + 1}-content`}>{truncateText(newsItem.content, 100)}</p>
                                             <div className='date-container'>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './/inactive-course-table.scss';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../../../../../config/axios';
@@ -6,23 +6,19 @@ import api from '../../../../../../config/axios';
 function InactiveCourseTable() {
     const [data, setData] = useState([]);
     const [searchValue, setSearchValue] = useState('');
-    const [error, setError] = useState(null);
 
     // Pagination variables
     const [currentPage, setCurrentPage] = useState(1);
-    const recordPage = 6;
+    const recordPage = 10;
     const lastIndex = currentPage * recordPage;
     const firsIndex = lastIndex - recordPage;
-
-    const navigate = useNavigate();
 
     // Fetch all courses
     const getAllCourse = async () => {
         try {
-            const response = await api.get('Course/list');
+            const response = await api.get('Course/inactive-courses');
             const res = response.data;
-            const filterList = res.filter(course => course.status === false);
-            setData(filterList);
+            setData(res);
         } catch (err) {
             console.log(err);
         }
@@ -49,9 +45,17 @@ function InactiveCourseTable() {
         getAllCourse();
     }, []);
 
-    const updateBtn = (courseId) => {
-        navigate(`cap-nhat-khoa-hoc/${courseId}`);
-        window.scrollTo(0, 0);
+    const updateBtn = async (courseId) => {
+        try {
+            window.scroll({
+                top: 0,
+                behavior: 'instant'
+            });
+            await api.patch('Course/activate/' + courseId);
+            location.reload();
+        } catch (err) {
+            console.log(err);
+        }
     }
 
     // Filtering function
@@ -78,23 +82,23 @@ function InactiveCourseTable() {
         return `${day}/${month}/${year}`;
     }
 
-    const handleDelete = async (courseId) => {
-        try {
-            // Perform the deletion
-            await api.delete('Course/deactivate/' + courseId);
+    // const handleDelete = async (courseId) => {
+    //     try {
+    //         // Perform the deletion
+    //         await api.delete('Course/deactivate/' + courseId);
 
-            // Reload the page after successful deletion
-            setTimeout(() => {
-                location.reload();
-            }, 0.1);
+    //         // Reload the page after successful deletion
+    //         setTimeout(() => {
+    //             location.reload();
+    //         }, 0.1);
 
-            // Once deletion is successful, fetch the updated data
-            await getAllCourse();
+    //         // Once deletion is successful, fetch the updated data
+    //         await getAllCourse();
 
-        } catch (err) {
-            console.log(err);
-        }
-    }
+    //     } catch (err) {
+    //         console.log(err);
+    //     }
+    // }
 
     return (
         <div className='courses-table-container'>
@@ -148,14 +152,14 @@ function InactiveCourseTable() {
                                         <td className='text-center'>{course.courseYear}</td>
                                         <td className='text-center'>{course.status ? "Đã kích hoạt" : "Chưa kích hoạt"}</td>
                                         <td className='button text-center'>
-                                            <button className="btn btn-primary" type="submit" onClick={() => updateBtn(course.courseId)}>Update</button>
+                                            <button className="btn btn-primary" type="button" onClick={() => updateBtn(course.courseId)}>Update</button>
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
                                     <td colSpan={10}>
-                                        <h1 className='text-center text-red-600 p-5'>
+                                        <h1 className='text-center text-red-600 p-5 tw-text-realRed'>
                                             Không tìm thấy thông tin. Vui lòng kiểm tra lại!
                                         </h1>
                                     </td>

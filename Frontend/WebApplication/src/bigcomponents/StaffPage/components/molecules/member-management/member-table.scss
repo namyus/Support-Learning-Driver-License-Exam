@@ -9,6 +9,14 @@
         justify-content: center;
         margin-top: 40px;
 
+        input {
+            padding: 5px;
+
+            &::placeholder {
+                font-style: italic;
+            }
+        }
+
         form {
             width: 90%;
 
@@ -21,6 +29,10 @@
                     }
                 }
             }
+        }
+
+        .search-input {
+            padding: 5px;
         }
     }
 }

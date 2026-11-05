@@ -1,0 +1,72 @@
+//--------------------------Course list--------------------------
+.courses-table-container {
+
+    .courses-table-title {
+        text-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+    }
+
+    .courses-table-content {
+        display: flex;
+        justify-content: center;
+        margin-top: 40px;
+
+        input {
+            padding: 5px;
+
+            &::placeholder {
+                font-style: italic;
+            }
+        }
+
+        form {
+            width: 90%;
+
+            table {
+                .button {
+                    width: auto;
+
+                    button {
+                        margin: 2px;
+                    }
+                }
+
+                tbody {
+                    a {
+                        text-decoration: none;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// --------------------------------------------------------------------------------------------
+
+//---------------------Course detail information---------------------
+.course-information-container {
+    margin-left: 10px;
+
+    .information-list-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        list-style: disc;
+
+        .list-inf-items {
+            .list-inf-items-title {
+                font-weight: 600;
+            }
+        }
+
+        .list-inf-items .list-inf-items-content .member-items-container {
+            margin-top: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            list-style-type: decimal;
+        }
+    }
+}
+
+
+//---------------------------------------------------------------------------------------------

@@ -4,21 +4,69 @@ import MemberImg from '../../../../../../assets/imgs/member/member_img.png'
 import LogoImg from '../../../../../../assets/imgs/logo.png'
 import './member-nav-home.scss'
 import api from '../../../../../config/axios';
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify';
 
 function MemberNavHome() {
     const user = sessionStorage.getItem('loginedUser') ? JSON.parse(sessionStorage.getItem('loginedUser')) : null;
     const username = user.username;
-    const member = sessionStorage.getItem('loginedMember') ? JSON.parse(sessionStorage.getItem('loginedMember')) : null;
+    const [member, setMember] = useState(null);
+    const [_student, setStudent] = useState(null);
+    const [_isPass, setIsPass] = useState(false);
 
     const navigate = useNavigate()
 
     const handleScroll = () => {
         {
-            window.scrollTo(0, 0);
+            window.scroll({
+                top: 0,
+                behavior: 'instant'
+            });
         }
     }
+
+    const getMemberByID = async () => {
+        try {
+            const res = await api.get(`Member/${user.userID}`);
+            setMember(res.data);
+            console.log(res.data);
+            sessionStorage.setItem('loginedMember', JSON.stringify(res.data));
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    const getStudentById = async () => {
+        try {
+            const response = await api.get('Student/' + member.memberID);
+            const res = response.data;
+            setStudent(res);
+            console.log(res.pass);
+            if (res.pass !== null && res.pass === true) {
+                setIsPass(true);
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    useEffect(() => {
+        if (user != null) {
+            getMemberByID();
+        }
+    }, [])
+
+    useEffect(() => {
+        const notify = localStorage.getItem('loginSuccessNotify');
+        if (notify != null) {
+            toast.success(notify);
+        }
+        localStorage.removeItem('loginSuccessNotify');
+    }, [])
+
+    useEffect(() => {
+        getStudentById();
+    }, [member])
 
     const handleClickNotMember = () => {
         toast.info("Bạn cần đăng ký khoá học để sử dụng chức năng");
@@ -40,35 +88,35 @@ function MemberNavHome() {
                         <nav>
                             <ul>
                                 <div className="nav-home-items">
-                                    <Link to="center-introduction" spy={true} smooth={true} offset={-100} duration={500}>
+                                    <Link to="center-introduction" spy={true} offset={-100} duration={500}>
                                         <img src={LogoImg} alt='logo-img' className='logo-home' />
                                     </Link>
                                 </div>
                                 <div className='nav-home-items'>
-                                    <Link to="center-introduction" spy={true} smooth={true} offset={-100} duration={500}>
+                                    <Link to="center-introduction" spy={true} offset={-100} duration={500}>
                                         <li className='inline-block'>
                                             <a href="">Trang chủ</a>
                                         </li>
                                     </Link>
                                 </div>
                                 <div className='nav-home-items'>
-                                    <Link to="course-section" spy={true} smooth={true} offset={-120} duration={500}>
+                                    <Link to="course-section" spy={true} offset={-120} duration={500}>
                                         <li className='inline-block'>
                                             <a href="">Khoá học</a>
                                         </li>
                                     </Link>
                                 </div>
                                 <div className='nav-home-items'>
-                                    <Link to="news-section" spy={true} smooth={true} offset={-120} duration={500}>
+                                    <Link to="news-section" spy={true} offset={-120} duration={500}>
                                         <li className='inline-block'>
                                             <a href="">Tin tức</a>
                                         </li>
                                     </Link>
                                 </div>
                                 <div className='nav-home-items'>
-                                    <Forward to='/thi-thu'>
+                                    <Forward to='/kiem-tra'>
                                         <li className='inline-block'>
-                                            <a href="">Thi thử</a>
+                                            <a href="">Kiểm tra</a>
                                         </li>
                                     </Forward>
                                 </div>
@@ -106,35 +154,35 @@ function MemberNavHome() {
                         <nav>
                             <ul>
                                 <div className="nav-home-items">
-                                    <Link to="center-introduction" spy={true} smooth={true} offset={-100} duration={500}>
+                                    <Link to="center-introduction" spy={true} offset={-100} duration={500}>
                                         <img src={LogoImg} alt='logo-img' className='logo-home' />
                                     </Link>
                                 </div>
                                 <div className='nav-home-items'>
-                                    <Link to="center-introduction" spy={true} smooth={true} offset={-100} duration={500}>
+                                    <Link to="center-introduction" spy={true} offset={-100} duration={500}>
                                         <li className='inline-block'>
                                             <a href="">Trang chủ</a>
                                         </li>
                                     </Link>
                                 </div>
                                 <div className='nav-home-items'>
-                                    <Link to="course-section" spy={true} smooth={true} offset={-120} duration={500}>
+                                    <Link to="course-section" spy={true} offset={-120} duration={500}>
                                         <li className='inline-block'>
                                             <a href="">Khoá học</a>
                                         </li>
                                     </Link>
                                 </div>
                                 <div className='nav-home-items'>
-                                    <Link to="news-section" spy={true} smooth={true} offset={-120} duration={500}>
+                                    <Link to="news-section" spy={true} offset={-120} duration={500}>
                                         <li className='inline-block'>
                                             <a href="">Tin tức</a>
                                         </li>
                                     </Link>
                                 </div>
                                 <div className='nav-home-items'>
-                                    <Forward to='/thi-thu'>
+                                    <Forward to='/kiem-tra'>
                                         <li className='inline-block'>
-                                            <a href="">Thi thử</a>
+                                            <a href=''>Kiểm tra</a>
                                         </li>
                                     </Forward>
                                 </div>

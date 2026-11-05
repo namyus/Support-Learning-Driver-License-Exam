@@ -16,6 +16,8 @@ function CourseTable() {
     const [course, setCourse] = useState<any[]>([]);
     const [show, setShow] = useState(false);
 
+    var courseContentMap = new Map();
+
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
@@ -33,37 +35,38 @@ function CourseTable() {
         return `${day}/${month}/${year}`;
     }
 
-    const getCourseDetailByMonth = async (month) => {
+    const getCourseData = async (month) => {
         try {
-            const response = await api.get(`/CourseDetail?courseMonth=${month}`);
-            setData(response.data);
-            setIsLoading(false);
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            setIsLoading(false);
-        }
-    }
+            const courseResponse = await api.get('Course/courseMonth?month=' + month + '&year=' + year);
+            const courseDetailsResponse = await api.get(`/CourseDetail?courseMonth=${month}`);
+            const validCourse = courseResponse.data.filter(course => {
+                const courseStartDate = new Date(course.startDate);
+                const currentDate = new Date();
+                currentDate.setHours(0, 0, 0, 0);
 
-    const getCourseByMonth = async (month) => {
-        try {
-            const response = await api.get('Course/courseMonth?month=' + month + '&year=' + year);
-            setCourse(response.data);
+                // Compare day, month, and year components
+                return courseStartDate >= currentDate;
+            });
+
+            const tempCourseData = validCourse.map(course => {
+                const detailsForCourse = courseDetailsResponse.data.filter(detail => detail.courseId === course.courseId);
+                return { ...course, details: detailsForCourse };
+            });
+
+            setData(tempCourseData);
+            setIsLoading(false);
         } catch (err) {
             console.log(err);
         }
-    }
+    };
 
     const handleNavigate = () => {
         navigate('/khoa-hoc-cua-ban')
     }
 
     useEffect(() => {
-        getCourseDetailByMonth(month);
-    }, [month])
-
-    useEffect(() => {
-        getCourseByMonth(month);
-    }, [data]);
+        getCourseData(month);
+    }, [month, year]);
 
     return (
         <>
@@ -86,8 +89,8 @@ function CourseTable() {
                             {
                                 member != null ? (
                                     !isLoading ? (
-                                        course.length > 0 ? (
-                                            course.map((course, i) => (
+                                        data.length > 0 ? (
+                                            data.map((course, i) => (
                                                 <tr key={i} >
                                                     <td className='course-no'>
                                                         <p>{i + 1}</p>
@@ -96,56 +99,56 @@ function CourseTable() {
                                                         <p>Khoá {course.name}</p>
                                                         <p>KG: {formatDate(course.startDate)}</p>
                                                         <p>BG: {formatDate(course.endDate)}</p>
+                                                        <p>Học phí: {course.courseFee.toLocaleString()} VNĐ</p>
                                                     </td>
                                                     <td className='course-mem'>
-                                                        <p>20</p>
+                                                        <p>{course.limitStudent}</p>
                                                     </td>
-                                                    <td className="course-training-content">
-                                                        <ol>
-                                                            <li className='border-receive'>Đào tạo lí thuyết</li>
-                                                            <li className='border-receive'>Thực hành trong hình</li>
-                                                            <li className='border-receive'>Thực hành trên cabin</li>
-                                                            <li className='border-receive'>Thực hành trên đường</li>
-                                                            <li className='border-receive'>Thực hành trên xe tự động</li>
-                                                            <li>Thực hành tổng hợp trong hình</li>
-                                                        </ol>
-                                                    </td>
-                                                    <td className="course-training-time">
-                                                        <ol>
-                                                            <li className='border-receive'>{formatDate(data[i * 6].courseTimeStart)} - {formatDate(data[i * 6].courseTimeEnd)}</li>
-                                                            <li className='border-receive'>{formatDate(data[i * 6 + 1].courseTimeStart)} - {formatDate(data[i * 6 + 1].courseTimeEnd)}</li>
-                                                            <li className='border-receive'>{formatDate(data[i * 6 + 2].courseTimeStart)} - {formatDate(data[i * 6 + 2].courseTimeEnd)}</li>
-                                                            <li className='border-receive'>{formatDate(data[i * 6 + 3].courseTimeStart)} - {formatDate(data[i * 6 + 3].courseTimeEnd)}</li>
-                                                            <li className='border-receive'>{formatDate(data[i * 6 + 4].courseTimeStart)} - {formatDate(data[i * 6 + 4].courseTimeEnd)}</li>
-                                                            <li>{formatDate(data[i * 6 + 5].courseTimeStart)} - {formatDate(data[i * 6 + 5].courseTimeEnd)}</li>
-                                                        </ol>
-                                                    </td>
+                                                    {
+                                                        course.details.length < 5 ? (
+                                                            <>
+                                                                <td className="course-training-content">
+                                                                    <ol>
+                                                                        {course.details.map((detail, j) => (
+                                                                            <li key={j} className=''>{detail.courseContent}</li>
+                                                                        ))}
+                                                                    </ol>
+                                                                </td>
+                                                                <td className="course-training-time">
+                                                                    <ol>
+                                                                        {course.details.map((detail, j) => (
+                                                                            <li key={j} className=''>
+                                                                                {formatDate(detail.courseTimeStart)} - {formatDate(detail.courseTimeEnd)}
+                                                                            </li>
+                                                                        ))}
+                                                                    </ol>
+                                                                </td>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <td className="course-training-content">
+                                                                    <ol>
+                                                                        {course.details.map((detail, j) => (
+                                                                            <li key={j} className=''>{detail.courseContent}</li>
+                                                                        ))}
+                                                                    </ol>
+                                                                </td>
+                                                                <td className="course-training-time">
+                                                                    <ol>
+                                                                        {course.details.map((detail, j) => (
+                                                                            <li key={j} className=''>
+                                                                                {formatDate(detail.courseTimeStart)} - {formatDate(detail.courseTimeEnd)}
+                                                                            </li>
+                                                                        ))}
+                                                                    </ol>
+                                                                </td>
+                                                            </>
+                                                        )
+                                                    }
                                                     <td className='course-register'>
-                                                        <Button className='btnRegister' variant="primary" onClick={handleShow}>
+                                                        <Button className='btnRegister btn btn-primary' onClick={handleShow}>
                                                             Đăng ký
                                                         </Button>
-
-                                                        <Modal
-                                                            show={show}
-                                                            onHide={handleClose}
-                                                            backdrop="static"
-                                                            keyboard={false}
-                                                            backdropClassName='backdrop'
-                                                            centered
-                                                        >
-                                                            <Modal.Header closeButton>
-                                                                <Modal.Title>Chú ý</Modal.Title>
-                                                            </Modal.Header>
-                                                            <Modal.Body>
-                                                                Bạn không thể đăng ký thêm khoá học do bạn đã đăng ký khoá học trước đó.
-                                                            </Modal.Body>
-                                                            <Modal.Footer>
-                                                                <Button variant="secondary" onClick={handleClose}>
-                                                                    Đóng
-                                                                </Button>
-                                                                <Button variant="primary" onClick={handleNavigate}>Khoá học của tôi</Button>
-                                                            </Modal.Footer>
-                                                        </Modal>
                                                     </td>
                                                 </tr>
                                             ))
@@ -165,8 +168,8 @@ function CourseTable() {
                                     )
                                 ) : (
                                     !isLoading ? (
-                                        course.length > 0 ? (
-                                            course.map((course, i) => (
+                                        data.length > 0 ? (
+                                            data.map((course, i) => (
                                                 <tr key={i} >
                                                     <td className='course-no'>
                                                         <p>{i + 1}</p>
@@ -175,35 +178,57 @@ function CourseTable() {
                                                         <p>Khoá {course.name}</p>
                                                         <p>KG: {formatDate(course.startDate)}</p>
                                                         <p>BG: {formatDate(course.endDate)}</p>
+                                                        <p>Học phí: {course.courseFee.toLocaleString()} VNĐ</p>
                                                     </td>
                                                     <td className='course-mem'>
-                                                        <p>20</p>
+                                                        <p>{course.limitStudent}</p>
                                                     </td>
-                                                    <td className="course-training-content">
-                                                        <ol>
-                                                            <li className='border-receive'>Đào tạo lí thuyết</li>
-                                                            <li className='border-receive'>Thực hành trong hình</li>
-                                                            <li className='border-receive'>Thực hành trên cabin</li>
-                                                            <li className='border-receive'>Thực hành trên đường</li>
-                                                            <li className='border-receive'>Thực hành trên xe tự động</li>
-                                                            <li>Thực hành tổng hợp trong hình</li>
-                                                        </ol>
-                                                    </td>
-                                                    <td className="course-training-time">
-                                                        <ol>
-                                                            <li className='border-receive'>{formatDate(data[i * 6].courseTimeStart)} - {formatDate(data[i * 6].courseTimeEnd)}</li>
-                                                            <li className='border-receive'>{formatDate(data[i * 6 + 1].courseTimeStart)} - {formatDate(data[i * 6 + 1].courseTimeEnd)}</li>
-                                                            <li className='border-receive'>{formatDate(data[i * 6 + 2].courseTimeStart)} - {formatDate(data[i * 6 + 2].courseTimeEnd)}</li>
-                                                            <li className='border-receive'>{formatDate(data[i * 6 + 3].courseTimeStart)} - {formatDate(data[i * 6 + 3].courseTimeEnd)}</li>
-                                                            <li className='border-receive'>{formatDate(data[i * 6 + 4].courseTimeStart)} - {formatDate(data[i * 6 + 4].courseTimeEnd)}</li>
-                                                            <li>{formatDate(data[i * 6 + 5].courseTimeStart)} - {formatDate(data[i * 6 + 5].courseTimeEnd)}</li>
-                                                        </ol>
-                                                    </td>
+                                                    {
+                                                        course.details.length < 5 ? (
+                                                            <>
+                                                                <td className="course-training-content">
+                                                                    <ol>
+                                                                        {course.details.map((detail, j) => (
+                                                                            <li key={j} className=''>{detail.courseContent}</li>
+                                                                        ))}
+                                                                    </ol>
+                                                                </td>
+                                                                <td className="course-training-time">
+                                                                    <ol>
+                                                                        {course.details.map((detail, j) => (
+                                                                            <li key={j} className=''>
+                                                                                {formatDate(detail.courseTimeStart)} - {formatDate(detail.courseTimeEnd)}
+                                                                            </li>
+                                                                        ))}
+                                                                    </ol>
+                                                                </td>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <td className="course-training-content">
+                                                                    <ol>
+                                                                        {course.details.map((detail, j) => (
+                                                                            <li key={j} className=''>{detail.courseContent}</li>
+                                                                        ))}
+                                                                    </ol>
+                                                                </td>
+                                                                <td className="course-training-time">
+                                                                    <ol>
+                                                                        {course.details.map((detail, j) => (
+                                                                            <li key={j} className=''>
+                                                                                {formatDate(detail.courseTimeStart)} - {formatDate(detail.courseTimeEnd)}
+                                                                            </li>
+                                                                        ))}
+                                                                    </ol>
+                                                                </td>
+                                                            </>
+                                                        )
+                                                    }
                                                     <td className='course-register'>
                                                         <Link to={`/khoahoc/xac-nhan-khoa-hoc/${course.name}`}>
-                                                            <button className='btnRegister' onClick={
-                                                                e => localStorage.setItem('courseID', JSON.stringify(course.courseId))
-                                                            }>Đăng ký</button>
+                                                            <button className='btnRegister' onClick={() => localStorage.setItem('courseID', JSON.stringify(course.courseId))}>
+                                                                Đăng ký
+                                                            </button>
                                                         </Link>
                                                     </td>
                                                 </tr>
@@ -227,6 +252,28 @@ function CourseTable() {
                         </table>
                     </form>
                 </div>
+
+                <Modal
+                    show={show}
+                    onHide={handleClose}
+                    backdrop="static"
+                    keyboard={false}
+                    backdropClassName='backdrop'
+                    centered
+                >
+                    <Modal.Header closeButton>
+                        <Modal.Title>Chú ý</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        Bạn không thể đăng ký thêm khoá học do bạn đã đăng ký khoá học trước đó.
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={handleClose}>
+                            Đóng
+                        </Button>
+                        <Button variant="primary" onClick={handleNavigate}>Khoá học của tôi</Button>
+                    </Modal.Footer>
+                </Modal>
             </div>
         </>
 

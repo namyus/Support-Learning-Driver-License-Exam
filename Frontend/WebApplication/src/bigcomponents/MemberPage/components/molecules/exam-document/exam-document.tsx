@@ -1,41 +1,36 @@
 import { useEffect, useState } from 'react';
 import './exam-document.scss'
 import { useNavigate } from 'react-router-dom'
-import api from '../../../../../config/axios';
 import { Backdrop, CircularProgress } from '@mui/material';
+import api from '../../../../../config/axios';
 
 function ExamDocument() {
   const user = sessionStorage.getItem('loginedUser') ? JSON.parse(sessionStorage.getItem('loginedUser')) : null;
-
   const [member, setMember] = useState(null);
+
   const [isLoading, setIsLoading] = useState(true);
-  const [integratedDrivingLicense, setIntegratedDrivingLicense] = useState(null);
-  const [revokedDrivingLicense, setRevokedDrivingLicense] = useState(null);
 
   const navigate = useNavigate();
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    window.scrollTo(0, 0);
-    navigate('/ho-so-thi/cap-nhat')
-  }
-
-  const getMemberById = async () => {
+  
+  const getMemberByUID = async () => {
     try {
-      const response = await api.post('Member?userID=' + user.userID);
-      const res = response.data;
-      setMember(res);
-      setIntegratedDrivingLicense(res.integratedDrivingLicense);
-      setRevokedDrivingLicense(res.revokedDrivingLicense);
+      const response = await api.get('Member/' + user.userID);
+      setMember(response.data);
       setIsLoading(false);
-    } catch (err) {
-      console.log(err);
+      sessionStorage.setItem('loginedMember', JSON.stringify(response.data));
+    } catch (error) {
+      console.log(error);
     }
   }
 
-  useEffect(() => {
-    getMemberById();
-  }, [])
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    window.scroll({
+      top: 0,
+      behavior: 'instant'
+    });
+    navigate('/ho-so-thi/cap-nhat')
+  }
 
   const formatDate = (dbDate) => {
     const date = new Date(dbDate);
@@ -44,6 +39,10 @@ function ExamDocument() {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   }
+
+  useEffect(() => {
+    getMemberByUID();
+  }, [])
 
   return (
     <div className='exam-document-container'>
@@ -85,7 +84,7 @@ function ExamDocument() {
                   </div>
                   <div className="gender-container">
                     <label htmlFor="gender">Giới tính: </label>
-                    <span> {member.gender}</span>
+                    <span> {member.gender.charAt(0).toUpperCase() + member.gender.slice(1)}</span>
                   </div>
                 </li>
                 <li>
@@ -94,7 +93,7 @@ function ExamDocument() {
                 </li>
                 <li>
                   <label htmlFor="tempAddress">Nơi cư trú: </label>
-                  <span> Cần Thơ, Sapa</span>
+                  <span> {member.temporaryAddress}</span>
                 </li>
                 <li>
                   <label htmlFor="cccdNo">Số giấy CMND, hoặc thẻ căn cước công dân (hoặc hộ chiếu): </label>
@@ -134,7 +133,7 @@ function ExamDocument() {
                 </li>
                 <li className='integratedDrivingLicense'>
                   <label htmlFor="integratedDrivingLicense">Đăng ký tích hợp giấy phép lái xe: </label>
-                  <input type="checkbox" checked={integratedDrivingLicense} disabled />
+                  <input type="checkbox" checked={member.integratedDrivingLicense} disabled />
                 </li>
                 <li className='inline-block'>
                   <label className='inline-block' htmlFor="">Vi phạm hành chính trong lĩnh vực giao thông đường
@@ -144,11 +143,11 @@ function ExamDocument() {
                   <div className='check-result'>
                     <div className='result-yes'>
                       <label htmlFor="check">Có: </label>
-                      <input type="radio" name='check' defaultChecked={revokedDrivingLicense} disabled />
+                      <input type="radio" name='check' defaultChecked={member.revokedDrivingLicense} disabled />
                     </div>
                     <div className='result-no'>
                       <label htmlFor="check">Không: </label>
-                      <input type="radio" name='check' defaultChecked={!revokedDrivingLicense} disabled />
+                      <input type="radio" name='check' defaultChecked={!member.revokedDrivingLicense} disabled />
                     </div>
                   </div>
                 </li>
@@ -170,7 +169,7 @@ function ExamDocument() {
                   <p>NGƯỜI LÀM ĐƠN</p>
                   <p>(Ký và ghi rõ họ, tên)</p>
                 </div>
-                <button className='update-btn' type='submit'>Cập nhật</button>
+                {/* <button className='update-btn btn btn-primary' type='submit'>Cập nhật</button> */}
               </form>
             </div>
           ) : (

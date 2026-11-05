@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import './mentor-table.scss'
 import api from '../../../../../config/axios';
 
@@ -17,13 +17,12 @@ function MemberTable() {
 
     //paganition part
     const [currentPage, setCurrentPage] = useState(1);
-    const recordPage = 6;
+    const recordPage = 10;
     const lastIndex = currentPage * recordPage;
     const firsIndex = lastIndex - recordPage;
     const records = mentor.slice(firsIndex, lastIndex);
     const npage = Math.ceil(mentor.length / recordPage);
     const numbers = [...Array(npage + 1).keys()].slice(1)
-    const overallIndex = (currentPage - 1) * recordPage;
 
     useEffect(() => {
         getAllMentors();
@@ -68,11 +67,11 @@ function MemberTable() {
                             {records.length > 0 ? (
                                 records.map((mentor, i: number = 1) => (
                                     <tr key={i}>
-                                        <td>{mentor.userId}</td>
+                                        <td>{mentor.mentorId}</td>
                                         <td>{mentor.fullName}</td>
                                         <td>{mentor.phone}</td>
-                                        <td>{mentor.isTheor}</td>
-                                        <td>{mentor.email}</td>
+                                        <td>{mentor.isTeachingTheory ? 'Đang dạy' : 'Không dạy'}</td>
+                                        <td>{mentor.isTeachingPractice ? 'Đang dạy' : 'Không dạy'}</td>
                                         <td>{mentor.email}</td>
                                     </tr>
                                 ))

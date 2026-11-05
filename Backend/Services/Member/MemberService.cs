@@ -1,9 +1,15 @@
 ﻿using AutoMapper;
 using AutoMapper.Execution;
+using Backend.DB.Models;
+using Backend.DTO.Course;
 using Backend.DTO.Members;
 using Backend.DTO.News;
+using Backend.Repository.ClassStudentRepository;
 using Backend.Repository.MemberRepository;
+using Backend.Repository.StudentRepository;
 using Backend.Repository.UserRepository;
+using Backend.Services.Class;
+using Backend.Services.ClassStudent;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Services.Member
@@ -12,12 +18,19 @@ namespace Backend.Services.Member
     {
         private readonly IUserRepository _userRepository;
         private readonly IMemberRepository _memberRepository;
+        private readonly IStudentRepository _studentRepository;
+        private readonly IClassStudentService _classStudentService;
         private readonly IMapper _mapper;
 
-        public MemberService(IMemberRepository memberRepository, IMapper mapper, IUserRepository userRepository)
+        public MemberService(IMemberRepository memberRepository, 
+            IMapper mapper, IUserRepository userRepository,
+            IStudentRepository studentRepository,
+            IClassStudentService classStudentService)
         {
             _userRepository = userRepository;
             _memberRepository = memberRepository;
+            _studentRepository = studentRepository;
+            _classStudentService = classStudentService;
             _mapper = mapper;
         }
 
@@ -36,19 +49,19 @@ namespace Backend.Services.Member
             }
         }
 
-        public async Task<ServiceResult<MemberDTO>> GetMemberById(int userID)
+        public async Task<ServiceResult<MemberDTO>> GetMemberById(int memberId)
         {
             var result = new ServiceResult<MemberDTO>();
             try
             {
-                var member = _memberRepository.GetAll().
-                    Include(c => c.User).ToList()
-                    .FirstOrDefault(p => p.UserId == userID);
+                var member = await _memberRepository.GetAll().
+                    Include(c => c.User).
+                    FirstOrDefaultAsync(p => p.MemberId == memberId);
 
                 if (member is null)
                 {
                     result.IsError = true;
-                    result.ErrorMessage = "User is not exist";
+                    result.ErrorMessage = "Member is not exist";
                     return result;
                 }
 
@@ -56,13 +69,35 @@ namespace Backend.Services.Member
             }
             catch (Exception e)
             {
-                result.IsError = false;
+                result.IsError = true;
                 result.ErrorMessage = e.Message;
             }
             return result;
         }
 
-        public int checkValidation(MemberCreateDTO memberCreateDTO)
+        public async Task<ServiceResult<MemberDTO>> GetMemberByUserId(int userID)
+        {
+            var result = new ServiceResult<MemberDTO>();
+            try {
+                var member = _memberRepository.GetAll().
+                    Include(c => c.User).ToList()
+                    .FirstOrDefault(p => p.UserId == userID);
+                
+                if (member is null) {
+                    result.IsError = true;
+                    result.ErrorMessage = "User is not exist";
+                    return result;
+                }
+                result.Payload = _mapper.Map<MemberDTO>(member);
+            } catch (Exception e) {
+                result.IsError = false;
+                result.IsError = true;
+                result.ErrorMessage = e.Message;
+            }
+            return result;
+        }
+
+            public int checkValidation(MemberCreateDTO memberCreateDTO)
         {
             int e = 0;
             var members = _memberRepository.GetAll().ToList();
@@ -78,9 +113,10 @@ namespace Backend.Services.Member
                     e = 2;
                 }
                 var users = _userRepository.GetAll().ToList();
+                var userr = _userRepository.GetAll().Where(p => p.UserId == memberCreateDTO.UserId).FirstOrDefault();
                 foreach (var user in users) 
                 { 
-                    if (user.Phone.Equals(memberCreateDTO.Phone))
+                    if (user.Phone.Equals(memberCreateDTO.Phone) && !memberCreateDTO.Phone.Equals(user.Phone))
                     {
                         e = 3;
                     }
@@ -125,6 +161,56 @@ namespace Backend.Services.Member
                 user.Email = memberCreateDTO.Email;
                 await _userRepository.UpdateAsync(user);
                 await _memberRepository.AddAsync(members);
+            }
+            catch (Exception e)
+            {
+                result.IsError = true;
+                result.Payload = 0;
+                result.ErrorMessage = e.Message;
+            }
+            return result;
+        }
+
+        public async Task<ServiceResult<int>> UpdateIsPaid(int memberID)
+        {
+            var result = new ServiceResult<int>();
+            try
+            {
+                var member = _memberRepository.GetAll().
+                    Where(p => p.MemberId == memberID).FirstOrDefault();
+                if (member == null)
+                {
+                    result.IsError = true;
+                    result.ErrorMessage = "Member is not exist";
+                    result.Payload = -2;
+                    return result;
+                }
+                else
+                {
+                    int i = 0;
+                    var student = new DB.Models.Student();
+                    var students = _studentRepository.GetAll().ToList();
+                    foreach (var studentt  in students) 
+                    {
+                        i++;
+                    }
+                    string v = null;
+                    if (i < 10)
+                    {
+                        v = "0" + $"{i}";
+                    }
+                    else
+                    {
+                        v = $"{i}";
+                    }
+                    student.StudentId = member.CourseId + "." + v;
+                    student.CourseId = member.CourseId;
+                    student.MemberId = memberID;
+
+                    await _studentRepository.CreateAsync(student);
+                    member.IsPaid = true;
+                    await _memberRepository.UpdateAsync(member);
+                }
             }
             catch (Exception e)
             {

@@ -1,70 +1,175 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import './practice-register.scss'
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { toast } from 'react-toastify';
+import api from '../../../../../config/axios';
+import { get } from 'react-scroll/modules/mixins/scroller';
+import { Button, Modal } from 'react-bootstrap';
 
 function PracticeSpecificRegister() {
-
+    const user = sessionStorage.getItem('loginedUser') ? JSON.parse(sessionStorage.getItem('loginedUser')) : null;
+    const [member, setMember] = useState(null); // Store member
+    const [student, setStudent] = useState(null); // Store student
+    const { mentorId } = useParams();
+    const { courseId } = useParams();
     const navigate = useNavigate();
+    const [mentor, setMentor] = useState(null); // Store mentor
+    const [practiceSchedule, setPracticeSchedule] = useState([]);
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        window.scrollTo(0, 0);
-        toast.success("Đăng ký học thực hành thành công");
-        navigate('/khoa-hoc-cua-ban');
+    const [show, setShow] = useState(false);
+
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+
+    const [practiceClass, setPracticeClass] = useState([]); // Store practice class
+
+    const getMemberByUID = async () => {
+        try {
+            const response = await api.get('Member/' + user.userID);
+            setMember(response.data);
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    const getStudentByUID = async () => {
+        try {
+            const response = await api.get('Student/' + member.memberID);
+            const res = response.data;
+            setStudent(res);
+            sessionStorage.setItem('loginedStudent', JSON.stringify(res));
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const getClassByCourseId = async () => {
+        try {
+            const response = await api.get('Class/course/mentor/practice?courseId=' + courseId + '&mentorId=' + mentorId);
+            const res = response.data;
+            setPracticeClass(res);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const getPracticeSchedule = async () => {
+        try {
+            const response = await api.get('Lesson/practice/student/' + student.studentId);
+            const tempId = Array.from(new Set(response.data.map(item => item.mentorId)));
+            setPracticeSchedule(response.data);
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    const getMentorById = async () => {
+        try {
+            const response = await api.get('Mentor/' + mentorId);
+            const res = response.data;
+            setMentor(res);
+            return res;
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const handleNavigate = () => {
+        navigate('/khoa-hoc-cua-ban/lich-hoc-thuc-hanh');
+    }
+
+    useEffect(() => {
+        getClassByCourseId();
+        getMentorById();
+        getMemberByUID();
+    }, [])
+
+    useEffect(() => {
+        getStudentByUID();
+    }, [member])
+
+    useEffect(() => {
+        getPracticeSchedule();
+    }, [student])
+
+    const handleRegister = async (studentId, classId) => {
+        try {
+            const response = await api.post('ClassStudent', {
+                studentId: studentId,
+                classId: classId
+            });
+            if (response.status == 200) {
+                toast.success('Đăng ký thành công!');
+                navigate('/khoa-hoc-cua-ban');
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     return (
         <div className='practice-register-container'>
             <div className='title-container'>
                 <h1 className='practice-container-title'>Đăng ký lịch học thực hành</h1>
-                <h2 className='practice-container-subtitle'>
-                    Giáo viên: Nguyễn Văn A
-                    <br />
-                    Xe số: 51A-012xx (Hạn TL: dd/mm/yyyy)
-                    <br />
-                    Xe tự động: 51A-267xx (Hạn TL: dd/mm/yyyy)
-                </h2>
+                {
+                    mentor != null ? (
+                        <>
+                            <h2 className='practice-container-subtitle'>
+                                Giáo viên: {mentor.fullName}
+                            </h2>
+                        </>
+                    ) : (
+                        null
+                    )
+                }
             </div>
             <div className="practice-register-body">
                 <div className='practice-information'>
-                    <div className='practice-date-expected'>
-                        Thời gian từ ... đến ...:
-                        <div className='practice-session'>
+                    <div className='practice-date-expected tw-justify-center'>
+                        <div className='practice-session tw-text-center'>
                             <p className='morning-register'>Ca học sáng từ 8h00 - 12h00</p>
                             <p className='afternoon-register'>Ca học chiều từ 13h00 - 17h00</p>
-                            <p className='evening-register'>Ca học đêm từ 18h00 đến 20h00</p>
                         </div>
                     </div>
-                    <p className='practice-street-verify'>
-                        Học thực hành trên tuyến đường của xe 51A-012xx và 51A-267.xx được cấp phép
-                    </p>
                 </div>
-                <form onSubmit={handleSubmit}>
+                <form>
                     <table>
 
                         <thead>
                             <tr>
-                                <th rowSpan={1} className='practice-day w-25'>Thứ</th>
+                                <th rowSpan={1} className='practice-no'>STT</th>
+                                <th rowSpan={1} className='practice-day'>Thứ</th>
                                 <th rowSpan={1} className='practice-time'>Ca học</th>
                                 <th rowSpan={1} className='practice-time'></th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Sáng</td>
-                                <td>Thứ hai hàng tuần</td>
-                                <td>
-                                    <button className='register-btn'>Đăng ký</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Chiều</td>
-                                <td>Thứ hai hàng tuần</td>
-                                <td>
-                                    <button className='register-btn'>Đăng ký</button>
-                                </td>
-                            </tr>
+                            {
+                                practiceClass.length > 0 ? practiceClass.map((lesson, index) => (
+                                    <tr key={index}>
+                                        <td>{index + 1}</td>
+                                        <td>{lesson.dayOfWeek == 2 ? "Thứ hai" :
+                                            lesson.dayOfWeek == 3 ? "Thứ ba" :
+                                                lesson.dayOfWeek == 4 ? "Thứ tư" :
+                                                    lesson.dayOfWeek == 5 ? "Thứ năm" :
+                                                        lesson.dayOfWeek == 6 ? "Thứ sáu" : ""}</td>
+                                        <td>{lesson.shift}</td>
+                                        <td>
+                                            {
+                                                practiceSchedule.length > 0 ? (
+                                                    <button className='btn btn-primary' type='button' onClick={() => handleShow()}>Đăng ký</button>
+                                                ) : (
+                                                    <button className='btn btn-primary' type='button' onClick={() => handleRegister(student.studentId, lesson.classId)}>Đăng ký</button>
+                                                )
+                                            }
+                                        </td>
+                                    </tr>
+                                )) : (
+                                    <td colSpan={4}>
+                                        <h1 className='tw-text-realRed'>Giáo viên chưa đăng ký lịch</h1>
+                                    </td>
+                                )
+                            }
                         </tbody>
                     </table>
                     <div className='practice-register-note'>
@@ -72,6 +177,32 @@ function PracticeSpecificRegister() {
                     </div>
                 </form>
             </div>
+            <Modal
+                show={show}
+                onHide={handleClose}
+                backdrop="static"
+                keyboard={false}
+                backdropClassName='backdrop'
+                centered
+                size='lg'
+            >
+                <Modal.Header closeButton>
+                    <Modal.Title>
+                        <h1>Chú ý</h1>
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <h2>
+                        Mỗi học viên chỉ được đăng ký một buổi học thực hành.
+                    </h2>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleClose}>
+                        Đóng
+                    </Button>
+                    <Button variant="primary" onClick={handleNavigate}>Lịch học thực hành của tôi</Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     )
 }

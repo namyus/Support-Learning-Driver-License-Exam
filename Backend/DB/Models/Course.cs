@@ -5,9 +5,9 @@ namespace Backend.DB.Models;
 
 public partial class Course
 {
-    public string CourseId { get; set; }
+    public string CourseId { get; set; } = null!;
 
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     public DateTime? StartDate { get; set; }
 
@@ -16,6 +16,12 @@ public partial class Course
     public int? NumberOfStudents { get; set; }
 
     public int? LimitStudent { get; set; }
+
+    public decimal? CourseFee { get; set; }
+
+    public decimal? PassTheoryLs { get; set; }
+
+    public int? PassKm { get; set; }
 
     public DateTime? CreateTime { get; set; }
 
@@ -30,6 +36,8 @@ public partial class Course
     public virtual ICollection<CourseDetail> CourseDetails { get; set; } = new List<CourseDetail>();
 
     public virtual ICollection<Exam> Exams { get; set; } = new List<Exam>();
+
+    public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
 
     public virtual ICollection<Member> Members { get; set; } = new List<Member>();
 

@@ -1,0 +1,56 @@
+.body{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+
+        .user-information {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            border: 1px solid #000;  
+            border-radius: 10px; 
+            height: 80%;
+            width: 80%;
+        
+            .profile {
+            display: flex;
+            align-items: center;
+            margin-top: 50px;
+        
+            .profile-img {
+                margin-right: 100px;
+                   
+                    .icon{
+                        width: 150px;
+                        height: 150px;
+                    }
+            }
+        
+            .contain {
+                display: flex;
+                flex-direction: column;
+        
+                .line_content {
+                margin: 5px 10px;  
+                font-size: 1.5em; 
+                }
+                .information_content{
+                    color: black;
+                }
+            }
+            }
+            .Description{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-top: 100px;
+
+                .line_description{
+                    font-size: 1.5em;
+                }
+            }
+        }
+}
